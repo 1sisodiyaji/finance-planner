@@ -1,13 +1,13 @@
+import { PlusIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { ChartBarIcon, ArrowTrendingDownIcon } from '@heroicons/react/24/outline';
 
-const FlexiblePaymentSchedule = ({ loan }) => {
-  const { theme } = useTheme();
+const FlexiblePaymentSchedule = ({ loan, onSave }) => {
+  const [schedules, setSchedules] = useState(loan.flexibleSchedule || []);
   const [selectedMonth, setSelectedMonth] = useState(null);
-
-  if (!loan || !loan.schedule) return null;
+  const { theme } = useTheme();
 
   const formatCurrency = (amount) => {
     if (!amount) return '₹0';
@@ -18,10 +18,34 @@ const FlexiblePaymentSchedule = ({ loan }) => {
     }).format(amount);
   };
 
+  const handleAddSchedule = () => {
+    const newSchedule = {
+      startMonth: 1,
+      endMonth: 3,
+      monthlyPayment: loan.minimumPayment
+    };
+    const updatedSchedules = [...schedules, newSchedule];
+    setSchedules(updatedSchedules);
+    onSave(updatedSchedules);
+  };
+
+  // Calculate estimated months based on minimum payment
+  const estimatedMonths = Math.ceil(loan.totalAmount / loan.monthlyPayment);
+
+  if (!loan || !loan.schedule) return null;
+
   return (
     <div className="mt-4 space-y-4">
-      <div className="bg-gray-50 rounded-lg md:p-4 ">
-        <h3 className="text-lg font-semibold mb-2">Payment Schedule</h3>
+      <div className="bg-gray-50 rounded-lg md:p-4">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-lg font-semibold">Payment Schedule</h3>
+          <button
+            onClick={handleAddSchedule}
+            className={`p-2 rounded-full bg-gradient-to-r ${theme.primary} text-white hover:opacity-90`}
+          >
+            <PlusIcon className="w-5 h-5" />
+          </button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-white w-full">
           <div className={`p-4 rounded-lg ${theme.secondary} bg-opacity-10`}>
             <p className="text-sm">Monthly Payment</p>
@@ -32,8 +56,8 @@ const FlexiblePaymentSchedule = ({ loan }) => {
             <p className="md:text-xl font-bold">{formatCurrency(loan.totalAmount)}</p>
           </div>
           <div className={`p-4 rounded-lg ${theme.secondary} bg-opacity-10`}>
-            <p className="text-sm">Loan Term</p>
-            <p className="md:text-xl font-bold">{loan.loanTerm} months</p>
+            <p className="text-sm">Estimated Months</p>
+            <p className="md:text-xl font-bold">{estimatedMonths} months</p>
           </div>
         </div>
       </div>

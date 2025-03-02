@@ -9,7 +9,7 @@ const Header = ({ theme }) => {
       animate={{ opacity: 1, y: 0 }}
       className="mb-8 flex items-center space-x-4"
     >
-      <div className={`p-3 rounded-full ${theme.primary} bg-opacity-10`}>
+      <div className={`p-3 rounded-full bg-gradient-to-r ${theme.primary} bg-opacity-10`}>
         <ReceiptRefundIcon className={`w-8 h-8 ${theme.highlight}`} />
       </div>
       <div>

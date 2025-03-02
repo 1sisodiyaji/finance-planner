@@ -119,7 +119,7 @@ const Dashboard = () => {
             title="Monthly Income"
             value={`₹${totalIncome}`}
             icon={CurrencyRupeeIcon}
-            color="green"
+            color="border-green-200"
           >
             <div className="mt-2">
               {isEditingSalary ? (
@@ -133,7 +133,7 @@ const Dashboard = () => {
                   />
                   <button
                     onClick={handleSalarySubmit}
-                    className={`px-2 py-1 rounded text-black text-sm ${theme.primary}`}
+                    className={`px-2 py-1 rounded text-black text-sm bg-gradient-to-r ${theme.primary}`}
                   >
                     Save
                   </button>
@@ -158,19 +158,19 @@ const Dashboard = () => {
             title="Total Expenses"
             value={`₹${totalExpenses}`}
             icon={WalletIcon}
-            color="red"
+            color="border-red-200"
           />
           <StatCard
             title="Total Loans"
             value={`₹${totalLoans}`}
             icon={BanknotesIcon}
-            color="yellow"
+            color="border-yellow-200"
           />
           <StatCard
             title="Savings Rate"
             value={`${totalIncome > 0 ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1) : 0}%`}
             icon={ArrowTrendingUpIcon}
-            color="blue"
+            color="border-blue-200"
           />
         </div>
 

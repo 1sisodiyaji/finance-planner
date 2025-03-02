@@ -68,9 +68,9 @@ const LoanCard = ({ loan, children }) => {
             <p className={`text-xl font-bold`}>{formatCurrency(loan.totalAmount)}</p>
           </div>
           <div className={`p-4 rounded-lg bg-gradient-to-r ${theme.accent} bg-opacity-10`}>
-            <p className="text-sm ">Loan Term</p> 
-            <p className={`text-xl font-bold`}>{loan.tenure} years</p>
-          </div>
+            <p className="text-sm ">Estimated Months</p> 
+            <p className={`text-xl font-bold`}>{Math.ceil(loan.totalAmount / loan.monthlyPayment)} months</p>
+          </div> 
         </div>
 
         {children}

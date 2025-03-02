@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
+import { 
   HomeIcon,
   CreditCardIcon,
   BanknotesIcon,
@@ -11,10 +10,13 @@ import {
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useTheme, themes } from './context/ThemeContext';
-
+import { Share } from 'lucide-react';
+import ShareModal from './components/common/ShareModal';
+import { motion ,AnimatePresence  } from 'framer-motion';
 const Layout = ({ component }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isThemeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const [isShareModalOpen, setShareModalOpen] = useState(false);
   const location = useLocation();
   const { theme, setTheme, currentTheme } = useTheme();
 
@@ -43,6 +45,27 @@ const Layout = ({ component }) => {
       }
     }
   };
+
+  // Check for shared data in URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedData = params.get('data');
+    if (sharedData) {
+      try {
+        const decodedData = JSON.parse(atob(sharedData));
+        if (window.confirm('Do you want to import the shared data?')) {
+          Object.entries(decodedData).forEach(([key, value]) => {
+            if (value && key !== 'timestamp') {
+              localStorage.setItem(key, value);
+            }
+          });
+          window.location.href = window.location.pathname; // Remove query params
+        }
+      } catch (error) {
+        console.error('Error importing shared data:', error);
+      }
+    }
+  }, []);
 
   return (
     <div className="flex">
@@ -104,9 +127,13 @@ const Layout = ({ component }) => {
 
       {/* Top Bar */}
       <div className={`fixed top-0 right-0 h-16 bg-white shadow-sm z-30 flex items-center md:justify-end justify-between px-6 ${isSidebarOpen ? 'md:left-60' : 'md:left-20'} left-0`}>
-      <h1 className='md:hidden block text-xl font-semibold'> <span className='animate-pulse'>💰</span> CraftFossLabs</h1>
+        <h1 className='md:hidden block text-xl font-semibold'> <span className='animate-pulse'>💰</span> CraftFossLabs</h1>
         <div className="flex items-center space-x-4">
-         
+            
+            <Share 
+              className={`${theme.highlight} cursor-pointer`}
+              onClick={() => setShareModalOpen(true)}
+            />
           {/* Theme Selector */}
           <div className="relative">
             <button
@@ -165,6 +192,12 @@ const Layout = ({ component }) => {
       <div className={`flex-1 ${isSidebarOpen ? 'md:ml-60' : 'md:ml-20'} ml-0 mt-16 md:p-6 p-1 transition-all duration-300 mb-20 md:mb-0`}>
         {component}
       </div>
+
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+      />
 
       {/* Mobile Footer Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-40">

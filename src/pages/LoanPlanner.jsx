@@ -55,8 +55,8 @@ const LoanPlanner = () => {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8 flex items-center space-x-4"
         >
-          <div className={`p-3 rounded-full ${theme.primary} bg-opacity-10`}>
-            <BanknotesIcon className={`w-8 h-8 ${theme.highlight}`} />
+          <div className={`p-3 rounded-full bg-gradient-to-r ${theme.primary} bg-opacity-10`}>
+            <BanknotesIcon className={`w-8 h-8 text-white`} />
           </div>
           <div>
             <h1 className="md:text-3xl font-bold text-gray-900">Loan Planner</h1>

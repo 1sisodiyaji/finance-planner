@@ -48,8 +48,8 @@ const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) 
       <div className="bg-white md:p-6 px-1 py-4 rounded-2xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Your Expenses</h2>
-          <div className={`px-4 py-2 ${theme.primary} bg-opacity-10 rounded-lg`}>
-            <span className={`font-semibold ${theme.highlight}`}>
+          <div className={`px-4 py-2 ${theme.accent}  bg-opacity-10 rounded-lg`}>
+            <span className={`font-semibold text-white`}>
               Total: {formatCurrency(getTotalExpenses())}
             </span>
           </div>
@@ -65,7 +65,7 @@ const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className={`p-4 rounded-xl border-l-4 ${theme.secondary} bg-gray-50`}
+                className={`p-4 rounded-xl bg-gradient-to-r ${theme.primary} border-l-4 ${theme.border} bg-gray-50`}
               >
                 <div className="flex justify-between items-start text-white ">
                   <div className="space-y-1">

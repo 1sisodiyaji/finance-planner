@@ -62,7 +62,7 @@ const LoanForm = ({ loans, editingLoan, setEditingLoan, onLoanUpdate, showSucces
     <motion.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
-      className={`bg-white rounded-2xl shadow-lg p-6 border-l-4 ${theme.secondary}`}
+      className={`bg-white rounded-2xl shadow-lg p-6 border-l-4 ${theme.border}`}
     >
       <h2 className="text-xl font-semibold mb-6 flex items-center">
         {editingLoan ? '✏️ Edit Loan' : '💰 Add New Loan'}
@@ -156,7 +156,7 @@ const LoanForm = ({ loans, editingLoan, setEditingLoan, onLoanUpdate, showSucces
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`px-6 py-2 ${theme.primary} text-white rounded-lg hover:opacity-90 transition-colors duration-200 flex items-center space-x-2`}
+            className={`px-6 py-2 bg-gradient-to-r ${theme.primary} text-white rounded-lg hover:opacity-90 transition-colors duration-200 flex items-center space-x-2`}
           >
             {isSubmitting ? (
               <>
