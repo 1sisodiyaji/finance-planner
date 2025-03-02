@@ -33,65 +33,108 @@ const Reports = () => {
 
     try {
       const analytics = loanData.map(loan => {
-        // Ensure all values are properly parsed as numbers
-        const amount = parseFloat(loan.amount) || 0;
-        const interestRate = (parseFloat(loan.interestRate) || 0) / 100 / 12; // Monthly interest rate
-        const tenure = parseInt(loan.tenure) || 1;
-        const loanTerm = tenure * 12; // Convert years to months
+        // Parse base values
+        const amount = parseFloat(loan.amount);
+        const minimumPayment = parseFloat(loan.minimumPayment);
+        const totalAmount = amount; // No interest for flexible loans
 
-        // Calculate monthly payment using EMI formula
-        let monthlyPayment = 0;
-        let totalAmount = 0;
+        // Use minimum payment as monthly payment
+        const monthlyPayment = minimumPayment;
 
-        if (interestRate > 0) {
-          monthlyPayment = (amount * interestRate * Math.pow(1 + interestRate, loanTerm)) / 
-                          (Math.pow(1 + interestRate, loanTerm) - 1);
-          totalAmount = monthlyPayment * loanTerm;
-        } else {
-          // If interest rate is 0, simple division
-          monthlyPayment = amount / loanTerm;
-          totalAmount = amount;
-        }
+        // Calculate estimated months to repay
+        const estimatedMonths = Math.ceil(amount / minimumPayment);
 
-        // Generate payment schedule
+        // Generate payment schedule based on minimum payments and flexible schedules
         const startDate = new Date(loan.startDate || Date.now());
-        const schedule = Array.from({ length: loanTerm }, (_, index) => {
-          const month = new Date(startDate);
-          month.setMonth(month.getMonth() + index);
-          
-          const totalPaid = monthlyPayment * (index + 1);
-          const remainingAmount = Math.max(0, totalAmount - totalPaid);
-          const percentage = totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0;
+        const schedule = [];
+        let remainingAmount = amount;
+        let totalPaid = 0;
 
-          return {
+        for (let i = 0; i < estimatedMonths && remainingAmount > 0; i++) {
+          const month = new Date(startDate);
+          month.setMonth(month.getMonth() + i);
+
+          // Check if this month has a flexible payment scheduled
+          let currentPayment = minimumPayment;
+          if (loan.flexibleSchedule && Array.isArray(loan.flexibleSchedule)) {
+            const flexiblePayment = loan.flexibleSchedule.find(s => {
+              const monthIndex = i + 1; // Convert to 1-based index
+              return monthIndex >= s.startMonth && monthIndex <= s.endMonth;
+            });
+            if (flexiblePayment) {
+              currentPayment = parseFloat(flexiblePayment.monthlyPayment) || minimumPayment;
+            }
+          }
+
+          // Calculate remaining amount after this payment
+          const actualPayment = Math.min(currentPayment, remainingAmount);
+          totalPaid += actualPayment;
+          remainingAmount = Math.max(0, remainingAmount - actualPayment);
+
+          schedule.push({
             month: month.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
-            payment: monthlyPayment,
-            remainingAmount,
-            percentage: Math.min(100, percentage)
-          };
-        });
+            payment: actualPayment,
+            remainingAmount: remainingAmount,
+            percentage: (totalPaid / amount) * 100
+          });
+
+          // Break if loan is fully paid
+          if (remainingAmount === 0) break;
+        }
 
         return {
           ...loan,
-          monthlyPayment,
-          totalAmount,
-          loanTerm,
-          schedule
+          monthlyPayment: minimumPayment,
+          totalAmount: amount,
+          estimatedMonths,
+          schedule,
+          remainingAmount: remainingAmount,
+          totalPaid: totalPaid,
+          percentagePaid: (totalPaid / amount) * 100
         };
       });
 
       setLoanAnalytics(analytics);
 
-      // Calculate health score based on debt-to-income ratio
-      const totalMonthlyPayments = analytics.reduce((sum, loan) => sum + (loan.monthlyPayment || 0), 0);
+      // Calculate health score based on total monthly payments vs income
+      const totalMonthlyPayments = analytics.reduce((sum, loan) => sum + loan.monthlyPayment, 0);
       const monthlyIncome = parseFloat(income) || 0;
       const debtToIncomeRatio = monthlyIncome > 0 ? (totalMonthlyPayments / monthlyIncome) * 100 : 100;
       const calculatedScore = Math.max(0, 100 - debtToIncomeRatio);
       setHealthScore(calculatedScore);
+
     } catch (error) {
       console.error('Error calculating loan analytics:', error);
       setLoanAnalytics([]);
       setHealthScore(0);
+    }
+  };
+
+  const handleSaveSchedule = (loanId, newSchedule) => {
+    try {
+      // Get current loans from localStorage
+      const storedLoans = localStorage.getItem('loans');
+      const currentLoans = storedLoans ? JSON.parse(storedLoans) : [];
+      
+      // Find and update the specific loan
+      const updatedLoans = currentLoans.map(loan => {
+        if (loan.id === loanId) {
+          return {
+            ...loan,
+            flexibleSchedule: newSchedule
+          };
+        }
+        return loan;
+      });
+
+      // Save back to localStorage
+      localStorage.setItem('loans', JSON.stringify(updatedLoans));
+      
+      // Update state
+      setLoans(updatedLoans);
+      calculateLoanAnalytics(updatedLoans, totalIncome);
+    } catch (error) {
+      console.error('Error saving schedule:', error);
     }
   };
 
@@ -121,11 +164,9 @@ const Reports = () => {
     return () => window.removeEventListener('storage', loadData);
   }, []);
 
-  // Calculate totals from loanAnalytics to ensure we use the properly calculated values
   const totalAmount = loanAnalytics.reduce((sum, loan) => sum + (loan.totalAmount || 0), 0);
   const totalMonthlyPayments = loanAnalytics.reduce((sum, loan) => sum + (loan.monthlyPayment || 0), 0);
   const debtToIncomeRatio = totalIncome > 0 ? ((totalMonthlyPayments / totalIncome) * 100).toFixed(1) : '0.0';
-
    
   return (
     <>
@@ -137,44 +178,44 @@ const Reports = () => {
         <meta property="og:description" content="View detailed loan analytics and payment schedules" />
       </Helmet>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-6xl mx-auto md:px-4 md:py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900">Loan Analytics</h1>
-          <p className="text-lg text-gray-600">Track your loans and payment schedules</p>
+          <h1 className="md:text-3xl text-lg font-bold text-gray-900">Loan Analytics</h1>
+          <p className="md:text-lg text-gray-600">Track your loans and payment schedules</p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
           <SummaryCard
             title="Total Loan Amount"
             value={formatCurrency(totalAmount)}
             icon={BanknotesIcon}
-            color="blue"
+            color="bg-blue-100"
           />
           <SummaryCard
             title="Monthly Payments"
             value={formatCurrency(totalMonthlyPayments)}
             icon={ChartBarIcon}
-            color="green"
+            color="bg-green-100"
           />
           <SummaryCard
             title="Debt-to-Income"
             value={`${debtToIncomeRatio}%`}
             icon={ArrowTrendingDownIcon}
-            color="yellow"
+            color="bg-yellow-100"
           />
           <SummaryCard
             title="Financial Health"
             value={`${healthScore.toFixed(1)}%`}
             icon={DocumentChartBarIcon}
-            color="indigo"
+            color="bg-indigo-100"
           />
         </div>
 
-        <div className="space-y-8">
+        <div className="space-y-8 ">
           {loanAnalytics.length === 0 ? (
             <motion.div
               initial={{ opacity: 0 }}
@@ -193,7 +234,10 @@ const Reports = () => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <LoanCard loan={loan}>
-                  <FlexiblePaymentSchedule loan={loan} />
+                  <FlexiblePaymentSchedule 
+                    loan={loan} 
+                    onSave={(newSchedule) => handleSaveSchedule(loan.id, newSchedule)}
+                  />
                 </LoanCard>
               </motion.div>
             ))

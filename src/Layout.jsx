@@ -162,7 +162,7 @@ const Layout = ({ component }) => {
       </div>
 
       {/* Main content padding */}
-      <div className={`flex-1 ${isSidebarOpen ? 'md:ml-60' : 'md:ml-20'} ml-0 mt-16 p-6 transition-all duration-300 mb-20 md:mb-0`}>
+      <div className={`flex-1 ${isSidebarOpen ? 'md:ml-60' : 'md:ml-20'} ml-0 mt-16 md:p-6 p-1 transition-all duration-300 mb-20 md:mb-0`}>
         {component}
       </div>
 

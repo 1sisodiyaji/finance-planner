@@ -20,20 +20,20 @@ const FlexiblePaymentSchedule = ({ loan }) => {
 
   return (
     <div className="mt-4 space-y-4">
-      <div className="bg-gray-50 rounded-lg p-4">
+      <div className="bg-gray-50 rounded-lg md:p-4 ">
         <h3 className="text-lg font-semibold mb-2">Payment Schedule</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className={`p-4 rounded-lg ${theme.primary} bg-opacity-10`}>
-            <p className="text-sm text-gray-600">Monthly Payment</p>
-            <p className="text-xl font-bold">{formatCurrency(loan.monthlyPayment)}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-white w-full">
+          <div className={`p-4 rounded-lg ${theme.secondary} bg-opacity-10`}>
+            <p className="text-sm">Monthly Payment</p>
+            <p className="md:text-xl font-bold">{formatCurrency(loan.monthlyPayment)}</p>
           </div>
-          <div className={`p-4 rounded-lg ${theme.primary} bg-opacity-10`}>
-            <p className="text-sm text-gray-600">Total Amount</p>
-            <p className="text-xl font-bold">{formatCurrency(loan.totalAmount)}</p>
+          <div className={`p-4 rounded-lg bg-gradient-to-b ${theme.secondary} bg-opacity-10`}>
+            <p className="text-sm">Total Amount</p>
+            <p className="md:text-xl font-bold">{formatCurrency(loan.totalAmount)}</p>
           </div>
-          <div className={`p-4 rounded-lg ${theme.primary} bg-opacity-10`}>
-            <p className="text-sm text-gray-600">Loan Term</p>
-            <p className="text-xl font-bold">{loan.loanTerm} months</p>
+          <div className={`p-4 rounded-lg ${theme.secondary} bg-opacity-10`}>
+            <p className="text-sm">Loan Term</p>
+            <p className="md:text-xl font-bold">{loan.loanTerm} months</p>
           </div>
         </div>
       </div>
@@ -42,10 +42,10 @@ const FlexiblePaymentSchedule = ({ loan }) => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
+              <th className="md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Month</th>
+              <th className="md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
+              <th className="md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Remaining</th>
+              <th className="md:px-6 md:py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Progress</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -58,14 +58,14 @@ const FlexiblePaymentSchedule = ({ loan }) => {
                 className={`${selectedMonth === index ? 'bg-blue-50' : ''} hover:bg-gray-50 cursor-pointer`}
                 onClick={() => setSelectedMonth(index)}
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.month}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(payment.payment)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(payment.remainingAmount)}</td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-900">{payment.month}</td>
+                <td className="md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(payment.payment)}</td>
+                <td className="md:px-6 md:py-4 whitespace-nowrap text-sm text-gray-900">{formatCurrency(payment.remainingAmount)}</td>
+                <td className="md:px-6 md:py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className={`${theme.primary} rounded-full h-2`}
+                        className={`bg-gradient-to-r ${theme.primary} rounded-full h-2`}
                         style={{ width: `${payment.percentage}%` }}
                       />
                     </div>

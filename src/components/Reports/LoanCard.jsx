@@ -30,13 +30,13 @@ const LoanCard = ({ loan, children }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white rounded-xl shadow-sm overflow-hidden"
+      className="bg-white  w-full rounded-xl shadow-sm overflow-hidden"
     >
       <div className="p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <div className={`p-3 rounded-full ${theme.primary} bg-opacity-10`}>
-              <BanknotesIcon className={`w-6 h-6 ${theme.highlight}`} />
+            <div className={`p-3 rounded-full bg-gradient-to-b ${theme.primary} bg-opacity-10`}>
+              <BanknotesIcon className={`w-6 h-6 text-white`} />
             </div>
             <div>
               <h2 className="text-xl font-semibold">{loan.purpose || 'Loan'}</h2>
@@ -54,22 +54,22 @@ const LoanCard = ({ loan, children }) => {
           </div>
           <div className="text-right">
             <p className="text-sm text-gray-600">Interest Rate</p>
-            <p className="text-lg font-semibold">{loan.interestRate}%</p>
+            <p className="md:text-lg font-semibold">0 %</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-          <div className={`p-4 rounded-lg ${theme.primary} bg-opacity-10`}>
-            <p className="text-sm text-gray-600">Monthly Payment</p>
-            <p className="text-xl font-bold">{formatCurrency(loan.monthlyPayment)}</p>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 text-white">
+          <div className={`p-4 rounded-lg bg-gradient-to-r ${theme.accent} bg-opacity-10`}>
+            <p className="text-sm text-white">Monthly Payment</p>
+            <p className={`text-xl font-bold`}>{formatCurrency(loan.monthlyPayment)}</p>
           </div>
-          <div className={`p-4 rounded-lg ${theme.primary} bg-opacity-10`}>
-            <p className="text-sm text-gray-600">Total Amount</p>
-            <p className="text-xl font-bold">{formatCurrency(loan.totalAmount)}</p>
+          <div className={`p-4 rounded-lg bg-gradient-to-r ${theme.accent} bg-opacity-10`}>
+            <p className="text-sm text-white">Total Amount</p>
+            <p className={`text-xl font-bold`}>{formatCurrency(loan.totalAmount)}</p>
           </div>
-          <div className={`p-4 rounded-lg ${theme.primary} bg-opacity-10`}>
-            <p className="text-sm text-gray-600">Loan Term</p>
-            <p className="text-xl font-bold">{loan.tenure} years</p>
+          <div className={`p-4 rounded-lg bg-gradient-to-r ${theme.accent} bg-opacity-10`}>
+            <p className="text-sm ">Loan Term</p> 
+            <p className={`text-xl font-bold`}>{loan.tenure} years</p>
           </div>
         </div>
 

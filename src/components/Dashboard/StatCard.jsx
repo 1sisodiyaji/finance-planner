@@ -19,7 +19,7 @@ const StatCard = ({ title, value, icon: Icon, color, children }) => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`bg-white rounded-xl shadow-sm p-6 border-l-4 border-${color}-500`}
+      className={`bg-white rounded-xl shadow-sm p-6 border-l-4 border-${color}-200`}
     >
       <div className="flex items-center justify-between">
         <div>

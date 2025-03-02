@@ -5,8 +5,7 @@ import {
   PencilIcon,
   TrashIcon,
   CalendarIcon,
-  TagIcon,
-  CurrencyDollarIcon,
+  TagIcon, 
 } from '@heroicons/react/24/outline';
 import { IndianRupeeIcon } from 'lucide-react';
 
@@ -46,7 +45,7 @@ const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) 
       animate={{ opacity: 1, x: 0 }}
       className="space-y-6"
     >
-      <div className="bg-white p-6 rounded-2xl shadow-lg">
+      <div className="bg-white md:p-6 px-1 py-4 rounded-2xl shadow-lg">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Your Expenses</h2>
           <div className={`px-4 py-2 ${theme.primary} bg-opacity-10 rounded-lg`}>
@@ -74,7 +73,7 @@ const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) 
                     <div className="flex items-center text-sm space-x-4">
                       <div className="flex items-center space-x-1">
                         <CalendarIcon className="w-4 h-4" />
-                        <span>{formatDate(expense.date)}</span>
+                        <span className='text-nowrap'>{formatDate(expense.date)}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <TagIcon className="w-4 h-4" />
