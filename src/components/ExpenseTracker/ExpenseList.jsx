@@ -8,6 +8,7 @@ import {
   TagIcon,
   CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
+import { IndianRupeeIcon } from 'lucide-react';
 
 const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) => {
   const { theme } = useTheme();
@@ -29,9 +30,9 @@ const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) 
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'INR'
     }).format(amount);
   };
 
@@ -67,10 +68,10 @@ const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) 
                 exit={{ opacity: 0, y: -20 }}
                 className={`p-4 rounded-xl border-l-4 ${theme.secondary} bg-gray-50`}
               >
-                <div className="flex justify-between items-start">
+                <div className="flex justify-between items-start text-white ">
                   <div className="space-y-1">
                     <h3 className="font-semibold text-lg">{expense.description}</h3>
-                    <div className="flex items-center text-sm text-gray-500 space-x-4">
+                    <div className="flex items-center text-sm space-x-4">
                       <div className="flex items-center space-x-1">
                         <CalendarIcon className="w-4 h-4" />
                         <span>{formatDate(expense.date)}</span>
@@ -80,12 +81,12 @@ const ExpenseList = ({ expenses, onEdit, onExpenseUpdate, showSuccessMessage }) 
                         <span>{expense.category}</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <CurrencyDollarIcon className="w-4 h-4" />
+                        <IndianRupeeIcon className="w-4 h-4" />
                         <span>{formatCurrency(expense.amount)}</span>
                       </div>
                     </div>
                     {expense.notes && (
-                      <p className="text-sm text-gray-600 mt-1">{expense.notes}</p>
+                      <p className="text-sm mt-1">{expense.notes}</p>
                     )}
                   </div>
                   <div className="flex space-x-2">

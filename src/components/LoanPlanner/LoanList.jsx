@@ -49,14 +49,14 @@ const LoanList = ({ loans, onEdit, onLoanUpdate, showSuccessMessage }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`p-4 rounded-xl border-l-4 ${theme.secondary} bg-gray-50`}
+              className={`p-4 rounded-xl border-l-4 ${theme.secondary} text-white bg-gray-50`}
             >
               <div className="flex justify-between items-start">
                 <div>
                   <h3 className="font-semibold text-lg">{loan.name}</h3>
-                  <p className="text-gray-600">Amount: {formatCurrency(loan.amount)}</p>
-                  <p className="text-gray-600">Monthly Payment: {formatCurrency(loan.minimumPayment)}</p>
-                  <p className="text-gray-600">Start Date: {formatDate(loan.startDate)}</p>
+                  <p >Amount: {formatCurrency(loan.amount)}</p>
+                  <p >Monthly Payment: {formatCurrency(loan.minimumPayment)}</p>
+                  <p >Start Date: {formatDate(loan.startDate)}</p>
                 </div>
                 <div className="flex space-x-2">
                   <button

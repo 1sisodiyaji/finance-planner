@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
 import { Helmet } from 'react-helmet';
 import {
   BanknotesIcon,
@@ -8,113 +7,156 @@ import {
   DocumentChartBarIcon,
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
-import { SummaryCard, LoanCard } from '../components/Reports';
+import { SummaryCard, LoanCard, FlexiblePaymentSchedule } from '../components/Reports';
 
 const Reports = () => {
-  const { theme } = useTheme();
   const [loans, setLoans] = useState([]);
   const [loanAnalytics, setLoanAnalytics] = useState([]);
   const [healthScore, setHealthScore] = useState(0);
-  const monthlySalary = 21200;
+  const [totalIncome, setTotalIncome] = useState(0);
 
-  useEffect(() => {
-    const storedLoans = localStorage.getItem('loans');
-    if (storedLoans) {
-      const parsedLoans = JSON.parse(storedLoans);
-      setLoans(parsedLoans);
-      generateLoanAnalytics(parsedLoans);
-      setHealthScore(calculateHealthScore(parsedLoans));
+  const formatCurrency = (amount) => {
+    if (!amount) return '₹0';
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
+  const calculateLoanAnalytics = (loanData, income) => {
+    if (!loanData || !loanData.length) {
+      setLoanAnalytics([]);
+      setHealthScore(100);
+      return;
     }
-  }, []);
 
-  const generateLoanAnalytics = (loanData) => {
-    const analytics = loanData.map(loan => {
-      const totalAmount = parseFloat(loan.amount);
-      const monthlyPayment = totalAmount / loan.tenure;
-      const startDate = new Date(loan.startDate);
-      const endDate = new Date(startDate);
-      endDate.setMonth(endDate.getMonth() + loan.tenure);
+    try {
+      const analytics = loanData.map(loan => {
+        // Ensure all values are properly parsed as numbers
+        const amount = parseFloat(loan.amount) || 0;
+        const interestRate = (parseFloat(loan.interestRate) || 0) / 100 / 12; // Monthly interest rate
+        const tenure = parseInt(loan.tenure) || 1;
+        const loanTerm = tenure * 12; // Convert years to months
 
-      const schedule = Array.from({ length: loan.tenure }, (_, index) => {
-        const month = new Date(startDate);
-        month.setMonth(month.getMonth() + index);
-        const remainingAmount = totalAmount - (monthlyPayment * index);
-        const percentage = ((monthlyPayment * index) / totalAmount) * 100;
+        // Calculate monthly payment using EMI formula
+        let monthlyPayment = 0;
+        let totalAmount = 0;
+
+        if (interestRate > 0) {
+          monthlyPayment = (amount * interestRate * Math.pow(1 + interestRate, loanTerm)) / 
+                          (Math.pow(1 + interestRate, loanTerm) - 1);
+          totalAmount = monthlyPayment * loanTerm;
+        } else {
+          // If interest rate is 0, simple division
+          monthlyPayment = amount / loanTerm;
+          totalAmount = amount;
+        }
+
+        // Generate payment schedule
+        const startDate = new Date(loan.startDate || Date.now());
+        const schedule = Array.from({ length: loanTerm }, (_, index) => {
+          const month = new Date(startDate);
+          month.setMonth(month.getMonth() + index);
+          
+          const totalPaid = monthlyPayment * (index + 1);
+          const remainingAmount = Math.max(0, totalAmount - totalPaid);
+          const percentage = totalAmount > 0 ? (totalPaid / totalAmount) * 100 : 0;
+
+          return {
+            month: month.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }),
+            payment: monthlyPayment,
+            remainingAmount,
+            percentage: Math.min(100, percentage)
+          };
+        });
 
         return {
-          month: month.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-          payment: monthlyPayment,
-          remainingAmount: Math.max(0, remainingAmount),
-          percentage: Math.min(100, percentage)
+          ...loan,
+          monthlyPayment,
+          totalAmount,
+          loanTerm,
+          schedule
         };
       });
 
-      return {
-        ...loan,
-        totalAmount,
-        monthlyPayment,
-        startDate,
-        endDate,
-        schedule
-      };
-    });
+      setLoanAnalytics(analytics);
 
-    setLoanAnalytics(analytics);
+      // Calculate health score based on debt-to-income ratio
+      const totalMonthlyPayments = analytics.reduce((sum, loan) => sum + (loan.monthlyPayment || 0), 0);
+      const monthlyIncome = parseFloat(income) || 0;
+      const debtToIncomeRatio = monthlyIncome > 0 ? (totalMonthlyPayments / monthlyIncome) * 100 : 100;
+      const calculatedScore = Math.max(0, 100 - debtToIncomeRatio);
+      setHealthScore(calculatedScore);
+    } catch (error) {
+      console.error('Error calculating loan analytics:', error);
+      setLoanAnalytics([]);
+      setHealthScore(0);
+    }
   };
 
-  const calculateHealthScore = (loanData) => {
-    if (!loanData.length) return 0;
-    const totalMonthlyPayments = loanData.reduce((sum, loan) => {
-      return sum + (parseFloat(loan.amount) / loan.tenure);
-    }, 0);
-    const debtToIncomeRatio = (totalMonthlyPayments / monthlySalary) * 100;
-    return Math.max(0, 100 - debtToIncomeRatio);
-  };
+  useEffect(() => {
+    const loadData = () => {
+      try {
+        const storedLoans = localStorage.getItem('loans');
+        const storedIncome = localStorage.getItem('totalIncome');
 
-  // Calculate total statistics
-  const totalAmount = loanAnalytics.reduce((sum, loan) => sum + loan.totalAmount, 0);
-  const totalMonthlyPayments = loanAnalytics.reduce((sum, loan) => sum + loan.monthlyPayment, 0);
-  const debtToIncomeRatio = ((totalMonthlyPayments / monthlySalary) * 100).toFixed(1);
+        const parsedLoans = storedLoans ? JSON.parse(storedLoans) : [];
+        const parsedIncome = storedIncome ? parseFloat(storedIncome) : 0;
 
+        console.log('Loaded data:', { parsedLoans, parsedIncome });
+        
+        setLoans(parsedLoans);
+        setTotalIncome(parsedIncome);
+        calculateLoanAnalytics(parsedLoans, parsedIncome);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      }
+    };
+
+    loadData();
+
+    // Add event listener for storage changes
+    window.addEventListener('storage', loadData);
+    return () => window.removeEventListener('storage', loadData);
+  }, []);
+
+  // Calculate totals from loanAnalytics to ensure we use the properly calculated values
+  const totalAmount = loanAnalytics.reduce((sum, loan) => sum + (loan.totalAmount || 0), 0);
+  const totalMonthlyPayments = loanAnalytics.reduce((sum, loan) => sum + (loan.monthlyPayment || 0), 0);
+  const debtToIncomeRatio = totalIncome > 0 ? ((totalMonthlyPayments / totalIncome) * 100).toFixed(1) : '0.0';
+
+   
   return (
     <>
       <Helmet>
-        <title>Financial Reports | Finance Planner</title>
-        <meta name="description" content="Generate and analyze detailed financial reports, visualize spending patterns, and get insights into your financial health." />
-        <meta name="keywords" content="financial reports, spending analysis, financial insights, expense reports, loan reports" />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content="Financial Reports | Finance Planner" />
-        <meta property="og:description" content="Generate and analyze detailed financial reports, visualize spending patterns, and get insights into your financial health." />
-        <meta property="og:image" content="/android-chrome-512x512.png" />
-        
-        {/* Twitter */}
-        <meta property="twitter:card" content="summary_large_image" />
-        <meta property="twitter:title" content="Financial Reports | Finance Planner" />
-        <meta property="twitter:description" content="Generate and analyze detailed financial reports, visualize spending patterns, and get insights into your financial health." />
-        <meta property="twitter:image" content="/android-chrome-512x512.png" />
+        <title>Loan Reports | Finance Planner</title>
+        <meta name="description" content="View detailed loan analytics and payment schedules" />
+        <meta name="keywords" content="loan reports, loan analytics, payment schedules, financial health" />
+        <meta property="og:title" content="Loan Reports | Finance Planner" />
+        <meta property="og:description" content="View detailed loan analytics and payment schedules" />
       </Helmet>
-      <div className="max-w-7xl mx-auto md:px-4 md:py-8">
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className="md:text-3xl font-bold text-gray-900">Loan Reports</h1>
-          <p className="md:text-lg text-gray-600">Detailed analysis of your loans</p>
+          <h1 className="text-3xl font-bold text-gray-900">Loan Analytics</h1>
+          <p className="text-lg text-gray-600">Track your loans and payment schedules</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <SummaryCard
             title="Total Loan Amount"
-            value={`₹${totalAmount.toLocaleString()}`}
+            value={formatCurrency(totalAmount)}
             icon={BanknotesIcon}
             color="blue"
           />
           <SummaryCard
             title="Monthly Payments"
-            value={`₹${totalMonthlyPayments.toLocaleString()}`}
+            value={formatCurrency(totalMonthlyPayments)}
             icon={ChartBarIcon}
             color="green"
           />
@@ -133,9 +175,29 @@ const Reports = () => {
         </div>
 
         <div className="space-y-8">
-          {loanAnalytics.map(loan => (
-            <LoanCard key={loan.id} loan={loan} analytics={loan} />
-          ))}
+          {loanAnalytics.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-12 bg-white rounded-xl shadow-sm"
+            >
+              <DocumentChartBarIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No loans</h3>
+              <p className="mt-1 text-sm text-gray-500">Get started by adding a new loan.</p>
+            </motion.div>
+          ) : (
+            loanAnalytics.map(loan => (
+              <motion.div
+                key={loan.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <LoanCard loan={loan}>
+                  <FlexiblePaymentSchedule loan={loan} />
+                </LoanCard>
+              </motion.div>
+            ))
+          )}
         </div>
       </div>
     </>

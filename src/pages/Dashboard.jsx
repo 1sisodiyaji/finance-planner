@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Helmet } from 'react-helmet';
 import { useTheme } from '../context/ThemeContext';
-import { ArrowTrendingUpIcon, BanknotesIcon, CurrencyRupeeIcon, WalletIcon } from '@heroicons/react/24/outline';
-import { StatCard, CategoryCard, RecentTransactionCard } from '../components/Dashboard';
-import { ChartBarIcon } from 'lucide-react';
+import { ArrowTrendingUpIcon, BanknotesIcon, CurrencyRupeeIcon, WalletIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { StatCard, CategoryCard, RecentTransactionCard, SideIncomeCard } from '../components/Dashboard';
 
 const Dashboard = () => {
   const { theme } = useTheme();
@@ -13,24 +12,18 @@ const Dashboard = () => {
   const [totalExpenses, setTotalExpenses] = useState(0);
   const [totalLoans, setTotalLoans] = useState(0);
   const [expensesByCategory, setExpensesByCategory] = useState({});
-  const monthlySalary = 21200;
+  const [monthlySalary, setMonthlySalary] = useState(0);
+  const [isEditingSalary, setIsEditingSalary] = useState(false);
+  const [tempSalary, setTempSalary] = useState('');
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [recentTransactions, setRecentTransactions] = useState([]);
 
-  useEffect(() => {
-    const storedExpenses = localStorage.getItem('expenses');
-    const storedLoans = localStorage.getItem('loans');
-
-    if (storedExpenses) {
-      const parsedExpenses = JSON.parse(storedExpenses);
-      setExpenses(parsedExpenses);
-      calculateExpenseStats(parsedExpenses);
-    }
-
-    if (storedLoans) {
-      const parsedLoans = JSON.parse(storedLoans);
-      setLoans(parsedLoans);
-      calculateLoanStats(parsedLoans);
-    }
-  }, []);
+  const updateTotalIncome = (salary, sideIncomes = []) => {
+    const sideIncomeTotal = sideIncomes.reduce((sum, income) => sum + parseFloat(income.amount || 0), 0);
+    const total = parseFloat(salary) + sideIncomeTotal;
+    setTotalIncome(total);
+    localStorage.setItem('totalIncome', total.toString());
+  };
 
   const calculateExpenseStats = (expenseData) => {
     const total = expenseData.reduce((sum, expense) => sum + parseFloat(expense.amount || 0), 0);
@@ -49,107 +42,164 @@ const Dashboard = () => {
     setTotalLoans(total);
   };
 
+  const updateRecentTransactions = (expenses = [], loans = []) => {
+    const allTransactions = [
+      ...expenses.map(exp => ({ ...exp, type: 'expense' })),
+      ...loans.map(loan => ({ ...loan, type: 'loan' }))
+    ]
+    .sort((a, b) => new Date(b.date || b.startDate) - new Date(a.date || a.startDate))
+    .slice(0, 5);
+    
+    setRecentTransactions(allTransactions);
+  };
+
+  useEffect(() => {
+    const storedExpenses = localStorage.getItem('expenses');
+    const storedLoans = localStorage.getItem('loans');
+    const storedSalary = localStorage.getItem('monthlySalary');
+    const storedSideIncomes = localStorage.getItem('sideIncomes');
+
+    const parsedExpenses = storedExpenses ? JSON.parse(storedExpenses) : [];
+    const parsedLoans = storedLoans ? JSON.parse(storedLoans) : [];
+    const parsedSalary = storedSalary ? parseFloat(storedSalary) : 0;
+    const parsedSideIncomes = storedSideIncomes ? JSON.parse(storedSideIncomes) : [];
+
+    setExpenses(parsedExpenses);
+    setLoans(parsedLoans);
+    setMonthlySalary(parsedSalary);
+
+    calculateExpenseStats(parsedExpenses);
+    calculateLoanStats(parsedLoans);
+    updateTotalIncome(parsedSalary, parsedSideIncomes);
+    updateRecentTransactions(parsedExpenses, parsedLoans);
+  }, []);
+
+  const handleSideIncomeUpdate = (sideIncomes) => {
+    updateTotalIncome(monthlySalary, sideIncomes);
+  };
+
+  const handleSalarySubmit = () => {
+    const newSalary = parseFloat(tempSalary);
+    if (!isNaN(newSalary) && newSalary >= 0) {
+      setMonthlySalary(newSalary);
+      localStorage.setItem('monthlySalary', newSalary.toString());
+      setIsEditingSalary(false);
+      updateTotalIncome(newSalary);
+    }
+  };
+
   return (
     <>
       <Helmet>
         <title>Dashboard | Finance Planner</title>
-        <meta name="description" content="View your financial overview, track expenses, monitor loans, and analyze your spending patterns in one place." />
-        <meta name="keywords" content="financial dashboard, expense tracking, loan monitoring, financial overview" />
-         
+        <meta name="description" content="View your financial overview, track expenses, and monitor loan payments." />
+        <meta name="keywords" content="dashboard, finance overview, expense tracking, loan monitoring" />
         <meta property="og:type" content="website" />
         <meta property="og:title" content="Dashboard | Finance Planner" />
-        <meta property="og:description" content="View your financial overview, track expenses, monitor loans, and analyze your spending patterns in one place." />
+        <meta property="og:description" content="View your financial overview, track expenses, and monitor loan payments." />
         <meta property="og:image" content="/android-chrome-512x512.png" />
-         
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:title" content="Dashboard | Finance Planner" />
-        <meta property="twitter:description" content="View your financial overview, track expenses, monitor loans, and analyze your spending patterns in one place." />
+        <meta property="twitter:description" content="View your financial overview, track expenses, and monitor loan payments." />
         <meta property="twitter:image" content="/android-chrome-512x512.png" />
       </Helmet>
-      <div className="max-w-7xl mx-auto md:px-4 md:py-8">
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex justify-between items-center"
+          className="mb-8"
         >
-          <div>
-            <h1 className="md:text-3xl font-bold text-gray-900">Financial Dashboard</h1>
-            <p className="md:text-lg text-gray-600">Overview of your finances</p>
-          </div>
-          <div className="bg-white rounded-xl shadow-sm p-4 flex items-center space-x-3">
-            <WalletIcon className={`w-6 h-6 ${theme.highlight}`} />
-            <div>
-              <p className="md:text-sm text-gray-600">Monthly Salary</p>
-              <p className="text-xl font-bold">₹21,200</p>
-            </div>
-          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Financial Overview</h1>
+          <p className="text-lg text-gray-600">Track your finances and plan your future</p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
+            title="Monthly Income"
+            value={`₹${totalIncome}`}
+            icon={CurrencyRupeeIcon}
+            color="green"
+          >
+            <div className="mt-2">
+              {isEditingSalary ? (
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="number"
+                    value={tempSalary}
+                    onChange={(e) => setTempSalary(e.target.value)}
+                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    placeholder="Enter salary"
+                  />
+                  <button
+                    onClick={handleSalarySubmit}
+                    className={`px-2 py-1 rounded text-black text-sm ${theme.primary}`}
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-600">Salary: ₹{monthlySalary}</span>
+                  <button
+                    onClick={() => {
+                      setTempSalary(monthlySalary.toString());
+                      setIsEditingSalary(true);
+                    }}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          </StatCard>
+          <StatCard
             title="Total Expenses"
-            amount={totalExpenses}
-            icon={ChartBarIcon}
-            color={theme.secondary}
+            value={`₹${totalExpenses}`}
+            icon={WalletIcon}
+            color="red"
           />
           <StatCard
             title="Total Loans"
-            amount={totalLoans}
+            value={`₹${totalLoans}`}
             icon={BanknotesIcon}
-            color={theme.secondary}
+            color="yellow"
           />
           <StatCard
-            title="Net Balance"
-            amount={monthlySalary - totalExpenses}
+            title="Savings Rate"
+            value={`${totalIncome > 0 ? (((totalIncome - totalExpenses) / totalIncome) * 100).toFixed(1) : 0}%`}
             icon={ArrowTrendingUpIcon}
-            color={theme.secondary}
-          />
-          <StatCard
-            title="Savings Potential"
-            amount={Math.max(0, monthlySalary - totalExpenses - totalLoans)}
-            icon={CurrencyRupeeIcon}
-            color={theme.secondary}
+            color="blue"
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
-          >
-            <h2 className="text-xl font-semibold">Expense Categories</h2>
-            <div className="grid gap-4">
-              {Object.entries(expensesByCategory).map(([category, amount]) => (
-                <CategoryCard
-                  key={category}
-                  category={category}
-                  amount={amount}
-                  total={totalExpenses}
-                />
-              ))}
-            </div>
-          </motion.div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <SideIncomeCard onUpdate={handleSideIncomeUpdate} />
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            <h2 className="text-xl font-semibold mb-4">Expense Categories</h2>
+            {Object.entries(expensesByCategory).map(([category, amount]) => (
+              <CategoryCard 
+                key={category}
+                category={category}
+                amount={amount}
+                total={totalExpenses}
+              />
+            ))}
+          </div>
+        </div>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
-          >
-            <h2 className="text-xl font-semibold">Recent Transactions</h2>
-            <div className="space-y-4">
-              {[...expenses, ...loans]
-                .sort((a, b) => new Date(b.date || b.startDate) - new Date(a.date || a.startDate))
-                .slice(0, 5)
-                .map((item) => (
-                  <RecentTransactionCard
-                    key={item.id}
-                    item={item}
-                    type={item.description ? 'expense' : 'loan'}
-                  />
-                ))}
-            </div>
-          </motion.div>
+        <div className="bg-white rounded-xl shadow-sm p-6">
+          <h2 className="text-xl font-semibold mb-4">Recent Transactions</h2>
+          <div className="space-y-4">
+            {recentTransactions.map((transaction, index) => (
+              <RecentTransactionCard
+                key={transaction.id || index}
+                item={transaction}
+                type={transaction.type}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </>

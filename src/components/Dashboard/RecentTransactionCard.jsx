@@ -2,41 +2,69 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { 
-  CurrencyRupeeIcon,
-  BanknotesIcon,
   CalendarIcon,
-  TagIcon
+  WalletIcon,
+  BanknotesIcon
 } from '@heroicons/react/24/outline';
+import { TagIcon } from 'lucide-react';
 
 const RecentTransactionCard = ({ item, type }) => {
+  if (!item) return null;
+
   const { theme } = useTheme();
-  
+
+  const formatAmount = (amount) => {
+    if (!amount) return '0';
+    const value = parseFloat(amount);
+    return value.toLocaleString('en-IN', {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0
+    });
+  };
+
+  const getDisplayTitle = () => {
+    if (type === 'expense') {
+      return item.description || 'Expense';
+    }
+    return item.purpose || item.name || 'Loan';
+  };
+
+  const getDisplayDate = () => {
+    const date = item.date || item.startDate;
+    if (!date) return 'No date';
+    return new Date(date).toLocaleDateString('en-IN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   return (
     <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm"
     >
-      <div className="flex items-center space-x-3">
-        <div className={`p-2 rounded-full ${theme.primary} bg-opacity-10`}>
+      <div className="flex items-center space-x-4">
+        <div className={`p-2 rounded-full ${type === 'expense' ? 'bg-red-100' : 'bg-green-100'}`}>
           {type === 'expense' ? (
-            <CurrencyRupeeIcon className={`w-5 h-5 ${theme.highlight}`} />
+            <WalletIcon className={`w-5 h-5 ${type === 'expense' ? 'text-red-600' : 'text-green-600'}`} />
           ) : (
-            <BanknotesIcon className={`w-5 h-5 ${theme.highlight}`} />
+            <BanknotesIcon className={`w-5 h-5 ${type === 'expense' ? 'text-red-600' : 'text-green-600'}`} />
           )}
         </div>
         <div>
-          <p className="font-medium">{type === 'expense' ? item.description : item.name}</p>
+          <p className="font-medium">{getDisplayTitle()}</p>
           <div className="flex items-center text-sm text-gray-500 space-x-2">
             <CalendarIcon className="w-4 h-4" />
-            <span>{new Date(item.date || item.startDate).toLocaleDateString()}</span>
+            <span>{getDisplayDate()}</span>
             <TagIcon className="w-4 h-4 ml-2" />
             <span>{item.category}</span>
           </div>
         </div>
       </div>
       <p className={`font-semibold ${type === 'expense' ? 'text-red-500' : 'text-green-500'}`}>
-        ₹{parseFloat(item.amount).toLocaleString()}
+        ₹{formatAmount(item.amount)}
       </p>
     </motion.div>
   );
