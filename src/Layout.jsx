@@ -12,7 +12,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { useTheme, themes } from './context/ThemeContext';
 
-
 const Layout = ({ component }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [isThemeDropdownOpen, setThemeDropdownOpen] = useState(false);
@@ -20,7 +19,7 @@ const Layout = ({ component }) => {
   const { theme, setTheme, currentTheme } = useTheme();
 
   const menuItems = [
-    { path: '/', icon: HomeIcon, label: 'Dashboard' },
+    { path: '/', icon: HomeIcon, label: 'Home' },
     { path: '/loans', icon: CreditCardIcon, label: 'Loans' },
     { path: '/expenses', icon: BanknotesIcon, label: 'Expenses' },
     { path: '/reports', icon: ChartPieIcon, label: 'Reports' },
@@ -44,14 +43,15 @@ const Layout = ({ component }) => {
       }
     }
   };
+
   return (
     <div className="flex">
-      {/* Sidebar */}
+      {/* Sidebar - Hidden on mobile */}
       <motion.nav
         variants={sidebarVariants}
         initial="open"
         animate={isSidebarOpen ? "open" : "closed"}
-        className={`fixed top-0 left-0 bottom-0 bg-gradient-to-b ${theme.primary} text-white z-40`}
+        className={`fixed top-0 left-0 bottom-0 bg-gradient-to-b ${theme.primary} text-white z-40 hidden md:block`}
       >
         <div className="flex flex-col h-full">
           <div className={`flex items-center p-6 ${!isSidebarOpen && 'justify-center'}`}>
@@ -76,8 +76,8 @@ const Layout = ({ component }) => {
                     whileHover={{ x: 10 }}
                     whileTap={{ scale: 0.95 }}
                     className={`flex items-center px-6 py-3 transition-colors ${isActive
-                        ? 'bg-white/20 text-white'
-                        : 'text-white/70 hover:bg-white/10'
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:bg-white/10'
                       }`}
                   >
                     <Icon className="w-6 h-6" />
@@ -103,8 +103,10 @@ const Layout = ({ component }) => {
       </motion.nav>
 
       {/* Top Bar */}
-      <div className={`fixed top-0 right-0 h-16 bg-white shadow-sm z-30 flex items-center justify-end px-6 ${isSidebarOpen ? 'left-60' : 'left-20'}`}>
+      <div className={`fixed top-0 right-0 h-16 bg-white shadow-sm z-30 flex items-center md:justify-end justify-between px-6 ${isSidebarOpen ? 'md:left-60' : 'md:left-20'} left-0`}>
+      <h1 className='md:hidden block text-xl font-semibold'> <span className='animate-pulse'>💰</span> CraftFossLabs</h1>
         <div className="flex items-center space-x-4">
+         
           {/* Theme Selector */}
           <div className="relative">
             <button
@@ -112,6 +114,7 @@ const Layout = ({ component }) => {
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center space-x-2"
             >
               <SwatchIcon className={`w-6 h-6 ${theme.highlight}`} />
+              
               {isThemeDropdownOpen ? (
                 <ChevronDownIcon className="w-4 h-4 transform rotate-180" />
               ) : (
@@ -159,11 +162,34 @@ const Layout = ({ component }) => {
       </div>
 
       {/* Main content padding */}
-      <div className={`flex-1 ${isSidebarOpen ? 'ml-60' : 'ml-20'} mt-16 p-6 transition-all duration-300`}>
+      <div className={`flex-1 ${isSidebarOpen ? 'md:ml-60' : 'md:ml-20'} ml-0 mt-16 p-6 transition-all duration-300 mb-20 md:mb-0`}>
         {component}
       </div>
-    </div>
-  )
-}
 
-export default Layout
+      {/* Mobile Footer Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-40">
+        <div className="grid grid-cols-4 h-16">
+          {menuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path;
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex flex-col items-center justify-center space-y-1 ${
+                  isActive ? `text-${theme.highlight.split('-')[1]}` : 'text-gray-600'
+                }`}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-xs">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+};
+
+export default Layout;
