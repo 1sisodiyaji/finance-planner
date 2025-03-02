@@ -8,8 +8,11 @@ import {
   ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
 import { SummaryCard, LoanCard, FlexiblePaymentSchedule } from '../components/Reports';
+import { ChartPieIcon } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const Reports = () => {
+  const { theme } = useTheme();
   const [loans, setLoans] = useState([]);
   const [loanAnalytics, setLoanAnalytics] = useState([]);
   const [healthScore, setHealthScore] = useState(0);
@@ -115,7 +118,7 @@ const Reports = () => {
       // Get current loans from localStorage
       const storedLoans = localStorage.getItem('loans');
       const currentLoans = storedLoans ? JSON.parse(storedLoans) : [];
-      
+
       // Find and update the specific loan
       const updatedLoans = currentLoans.map(loan => {
         if (loan.id === loanId) {
@@ -129,7 +132,7 @@ const Reports = () => {
 
       // Save back to localStorage
       localStorage.setItem('loans', JSON.stringify(updatedLoans));
-      
+
       // Update state
       setLoans(updatedLoans);
       calculateLoanAnalytics(updatedLoans, totalIncome);
@@ -148,7 +151,7 @@ const Reports = () => {
         const parsedIncome = storedIncome ? parseFloat(storedIncome) : 0;
 
         console.log('Loaded data:', { parsedLoans, parsedIncome });
-        
+
         setLoans(parsedLoans);
         setTotalIncome(parsedIncome);
         calculateLoanAnalytics(parsedLoans, parsedIncome);
@@ -167,7 +170,7 @@ const Reports = () => {
   const totalAmount = loanAnalytics.reduce((sum, loan) => sum + (loan.totalAmount || 0), 0);
   const totalMonthlyPayments = loanAnalytics.reduce((sum, loan) => sum + (loan.monthlyPayment || 0), 0);
   const debtToIncomeRatio = totalIncome > 0 ? ((totalMonthlyPayments / totalIncome) * 100).toFixed(1) : '0.0';
-   
+
   return (
     <>
       <Helmet>
@@ -178,14 +181,20 @@ const Reports = () => {
         <meta property="og:description" content="View detailed loan analytics and payment schedules" />
       </Helmet>
 
-      <div className="max-w-6xl mx-auto md:px-4 md:py-8">
+      <div className="max-w-7xl mx-auto md:px-4 md:py-8">
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex items-center space-x-4"
         >
-          <h1 className="md:text-3xl text-lg font-bold text-gray-900">Loan Analytics</h1>
-          <p className="md:text-lg text-gray-600">Track your loans and payment schedules</p>
+          <div className={`p-3 rounded-full bg-gradient-to-r ${theme.primary} bg-opacity-10`}>
+            <ChartPieIcon className={`w-8 h-8 text-white`} />
+          </div>
+          <div>
+            <h1 className="md:text-3xl font-bold text-gray-900">Loan Analytics</h1>
+            <p className="md:text-lg text-gray-600">Track your loans and payment schedules</p>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 w-full">
@@ -234,8 +243,8 @@ const Reports = () => {
                 animate={{ opacity: 1, y: 0 }}
               >
                 <LoanCard loan={loan}>
-                  <FlexiblePaymentSchedule 
-                    loan={loan} 
+                  <FlexiblePaymentSchedule
+                    loan={loan}
                     onSave={(newSchedule) => handleSaveSchedule(loan.id, newSchedule)}
                   />
                 </LoanCard>

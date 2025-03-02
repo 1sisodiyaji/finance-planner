@@ -49,7 +49,7 @@ const LoanPlanner = () => {
         <meta property="twitter:description" content="Plan and manage your loans, calculate EMIs, track loan payments, and analyze your loan portfolio effectively." />
         <meta property="twitter:image" content="/android-chrome-512x512.png" />
       </Helmet>
-      <div className="max-w-6xl mx-auto md:px-4 md:py-8">
+      <div className="max-w-7xl mx-auto md:px-4 md:py-8">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

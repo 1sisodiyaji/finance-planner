@@ -4,13 +4,12 @@ import {
   HomeIcon,
   CreditCardIcon,
   BanknotesIcon,
-  ChartPieIcon,
-  ChevronLeftIcon,
+  ChartPieIcon, 
   SwatchIcon,
   ChevronDownIcon
 } from '@heroicons/react/24/outline';
 import { useTheme, themes } from './context/ThemeContext';
-import { Share } from 'lucide-react';
+import { ChevronRightIcon, Share } from 'lucide-react';
 import ShareModal from './components/common/ShareModal';
 import { motion ,AnimatePresence  } from 'framer-motion';
 const Layout = ({ component }) => {
@@ -79,9 +78,9 @@ const Layout = ({ component }) => {
         <div className="flex flex-col h-full">
           <div className={`flex items-center p-6 ${!isSidebarOpen && 'justify-center'}`}>
             {isSidebarOpen ? (
-              <h1 className="text-2xl font-bold">CraftFossLabs</h1>
+              <Link to= "https://craftfosslabs.com" target='blank' className="text-2xl font-bold">CraftFossLabs</Link>
             ) : (
-              <h1 className="text-2xl font-bold">CFL</h1>
+              <Link to= "https://craftfosslabs.com" target='blank'  className="text-2xl font-bold">CFL</Link>
             )}
           </div>
 
@@ -113,14 +112,15 @@ const Layout = ({ component }) => {
 
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className="p-4 flex items-center justify-center hover:bg-white/10 transition-colors"
-          >
-            <motion.div
-              animate={{ rotate: isSidebarOpen ? 0 : 180 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ChevronLeftIcon className="w-6 h-6" />
-            </motion.div>
+            className="p-2 flex items-center justify-center hover:bg-white/10 transition-colors"
+          > 
+            <div className={`flex items-center p-2 ${!isSidebarOpen && 'justify-center'}`}>
+            {isSidebarOpen ? (
+              <h1>Close Side Menu</h1>
+            ) : (
+              <ChevronRightIcon className="w-6 h-6" />
+            )}
+            </div>
           </button>
         </div>
       </motion.nav>

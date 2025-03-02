@@ -48,7 +48,7 @@ const ExpenseTracker = () => {
         <meta property="twitter:description" content="Track and manage your daily expenses, categorize spending, and maintain a detailed record of your financial transactions." />
         <meta property="twitter:image" content="/android-chrome-512x512.png" />
       </Helmet>
-      <div className="max-w-6xl mx-auto md:px-4 md:py-8">
+      <div className="max-w-7xl mx-auto md:px-4 md:py-8">
         <Header theme={theme} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <ExpenseForm

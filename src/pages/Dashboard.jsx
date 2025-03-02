@@ -4,6 +4,7 @@ import { Helmet } from 'react-helmet';
 import { useTheme } from '../context/ThemeContext';
 import { ArrowTrendingUpIcon, BanknotesIcon, CurrencyRupeeIcon, WalletIcon, PencilIcon } from '@heroicons/react/24/outline';
 import { StatCard, CategoryCard, RecentTransactionCard, SideIncomeCard } from '../components/Dashboard';
+import { LayoutDashboardIcon } from 'lucide-react';
 
 const Dashboard = () => {
   const { theme } = useTheme();
@@ -104,14 +105,20 @@ const Dashboard = () => {
         <meta property="twitter:image" content="/android-chrome-512x512.png" />
       </Helmet>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+       
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex items-center space-x-4"
         >
+         <div className={`p-3 rounded-full bg-gradient-to-r ${theme.primary} bg-opacity-10`}>
+            <LayoutDashboardIcon className={`w-8 h-8 text-white`} />
+          </div>
+          <div>
           <h1 className="text-3xl font-bold text-gray-900">Financial Overview</h1>
           <p className="text-lg text-gray-600">Track your finances and plan your future</p>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
